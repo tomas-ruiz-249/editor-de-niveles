@@ -21,7 +21,8 @@ pygame.display.set_caption('El mejor grupo')
 ROWS = 100
 MAX_COLS = 100
 TILE_SIZE = 60
-TILE_TYPES = 6
+TILE_TYPES = 3
+TILE_WALLS = 3 
 level = 0
 current_tile = 1  
 scroll_left = False
@@ -31,15 +32,20 @@ scroll_down = False
 scroll_x = 0
 scroll_y = 0
 scroll_speed = 1
-player_placed = False
+#player_placed = False
 mouse_clicked = False  
 
 floating_items = []
 
-# Lista de imágenes
+# Lista de im�genes
 img_list = []
 for x in range(1, TILE_TYPES + 1): 
     img = pygame.image.load(f'img/tile/{x}.png').convert_alpha()
+    img = pygame.transform.scale(img, (TILE_SIZE, TILE_SIZE))
+    img_list.append(img)
+
+for x in range(1, TILE_WALLS + 1): 
+    img = pygame.image.load(f'img/walls/{x}.png').convert_alpha()
     img = pygame.transform.scale(img, (TILE_SIZE, TILE_SIZE))
     img_list.append(img)
 
@@ -54,7 +60,7 @@ RED = (200, 25, 25)
 # Fuentes
 font = pygame.font.SysFont('arcade', 32)
 
-# Crear un mapa vacío
+# Crear un mapa vac�o
 world_data = []
 for row in range(ROWS):
     r = [0] * MAX_COLS
@@ -64,7 +70,7 @@ for row in range(ROWS):
 for tile in range(MAX_COLS):
     world_data[ROWS - 1][tile] = 0
 
-# Función para mostrar texto
+# Funci�n para mostrar texto
 def draw_text(text, font, text_col, x, y):
     img = font.render(text, True, text_col)
     screen.blit(img, (x, y))
@@ -73,7 +79,7 @@ def draw_text(text, font, text_col, x, y):
 def draw_bg():
     screen.fill(BLACK)
     
-# Dibujar cuadrícula ajustada
+# Dibujar cuadr�cula ajustada
 def draw_grid():
     for c in range(MAX_COLS + 1):
         x_pos = c * TILE_SIZE - scroll_x
@@ -91,7 +97,7 @@ def draw_world():
             if tile > 0: 
                 screen.blit(img_list[tile - 1], (x * TILE_SIZE - scroll_x, y * TILE_SIZE - scroll_y))
 
-# Ajustar tamaños
+# Ajustar tama�os
 save_img = pygame.transform.scale(save_img, (270, 210))
 load_img = pygame.transform.scale(load_img, (270, 210))             
 
@@ -123,18 +129,19 @@ while run:
     draw_text('Presione A o D para cambiar de nivel', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 75)
     draw_text(f'Nivel: {level}', font, WHITE, 10, SCREEN_HEIGHT + LOWER_MARGIN - 45)
     
-    # Dibujar ítems flotantes
+    # Dibujar �tems flotantes
     for item in floating_items:
         item_type, item_x, item_y = item
         screen.blit(img_list[item_type - 1], (item_x - scroll_x - TILE_SIZE / 2, item_y - scroll_y - TILE_SIZE / 2))
     # Guardar y cargar datos
     if save_button.draw(screen):
-        with open(f'paredes.csv', 'w', newline='') as csvfile:
+        with open(f'paredes{level}.csv', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
             for row in world_data:
-                writer.writerow(row)
+                transformed_row = [1 if tile == 4 else 2 if tile == 5 else 3 if tile == 6 else tile for tile in row]
+                writer.writerow(transformed_row)
 
-        with open(f'items.csv', 'w', newline='') as csvfile:
+        with open(f'items{level}.csv', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
             for item in floating_items:
                 item_type = item[0]
@@ -144,12 +151,12 @@ while run:
                 writer.writerow([item_type, item_x, item_y])  
 
     if load_button.draw(screen):
-        with open(f'paredes.csv', newline='') as csvfile:
+        with open(f'paredes{level}.csv', newline='') as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
             world_data = []
             for row in reader:
                 world_data.append([int(tile) for tile in row]) 
-        with open(f'items.csv', newline='') as csvfile:
+        with open(f'items{level}.csv', newline='') as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
             floating_items.clear()  
             for row in reader:
@@ -159,8 +166,7 @@ while run:
                 item_y = float(row[2] )  * TILE_SIZE
 
                 floating_items.append([item_type, item_x, item_y]) 
-      #Municion 2, Botiquin 1, Lampara 3, Pared Ladrillo 1, Pared Piedra 2, Piedra dañada 3     
-      #Asoicar el nombre de un archivo con un diccionario        
+     
     #Botones
     pygame.draw.rect(screen, BLACK, (SCREEN_WIDTH, 0, SIDE_MARGIN, SCREEN_HEIGHT))
     for button_count, i in enumerate(button_list):
@@ -185,18 +191,22 @@ while run:
     y = (pos[1] + scroll_y) // TILE_SIZE
     if pos[0] < SCREEN_WIDTH and pos[1] < SCREEN_HEIGHT:
         if pygame.mouse.get_pressed()[0] == 1 and not mouse_clicked:
-            if current_tile in [2, 3, 4, 5]:
+            if current_tile in [1, 2, 3]:
                 item_x = (pos[0] + scroll_x)
                 item_y = (pos[1] + scroll_y)
-                if not any(item[0] == current_tile and abs(item[1] - item_x) < TILE_SIZE and abs(item[2] - item_y) < TILE_SIZE for item in floating_items):
-                    floating_items.append([current_tile, item_x, item_y])
-            elif current_tile == 1 and not player_placed:  
-                if world_data[y][x] == 0:
-                    world_data[y][x] = current_tile
-                    player_placed = True
-            elif current_tile == 6:
+                if world_data[y][x] in [0, 1, 2, 3]:
+                    if not any(item[0] == current_tile and abs(item[1] - item_x) < TILE_SIZE and abs(item[2] - item_y) < TILE_SIZE for item in floating_items):
+                        floating_items.append([current_tile, item_x, item_y])
+            #elif current_tile == 1 and not player_placed:  
+                #if world_data[y][x] == 0:
+                    #world_data[y][x] = current_tile
+                    #player_placed = True
+            elif current_tile in [4,5,6]:
                 world_data[y][x] = current_tile
-            mouse_clicked = True 
+                floating_items = [item for item in floating_items if not (
+                    abs(item[1] - (x * TILE_SIZE + TILE_SIZE / 2)) <= TILE_SIZE / 2 and
+                    abs(item[2] - (y * TILE_SIZE + TILE_SIZE / 2)) <= TILE_SIZE / 2)]
+                mouse_clicked = True 
 
         if pygame.mouse.get_pressed()[2] == 1:
             world_data[y][x] = 0
