@@ -61,11 +61,15 @@ RED = (200, 25, 25)
 # Fuentes
 font = pygame.font.SysFont('arcade', 32)
 
+maps = []
+items = []
 # Crear un mapa vac�o
 world_data = []
 for row in range(ROWS):
     r = [0] * MAX_COLS
     world_data.append(r)
+maps.append(world_data)
+items.append(floating_items)
 
 # Generar suelo
 for tile in range(MAX_COLS):
@@ -152,14 +156,14 @@ while run:
     if save_button.draw(screen):
         with open(f'map{level}.txt', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
-            for row in world_data:
+            for row in maps[level]:
                 transformed_row = [1 if tile == 4 else 2 if tile ==
                                    5 else 3 if tile == 6 else 4 if tile == 7 else tile for tile in row]
                 writer.writerow(transformed_row)
 
         with open(f'items{level}.csv', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
-            for item in floating_items:
+            for item in items[level]:
                 item_type = item[0]
                 item_x = float(item[1] / TILE_SIZE)
                 item_y = float(item[2] / TILE_SIZE)
@@ -173,6 +177,7 @@ while run:
             for row in reader:
                 transformed_row = [4 if tile == '1' else 5 if tile == '2' else 6 if tile == '3' else 7 if tile == '4' else 0 for tile in row]
                 world_data.append([int(tile) for tile in transformed_row])
+            maps[level] = world_data
         with open(f'items{level}.csv', newline='') as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
             floating_items.clear()
@@ -183,6 +188,7 @@ while run:
                 item_y = float(row[2]) * TILE_SIZE
 
                 floating_items.append([item_type, item_x, item_y])
+            items[level] = floating_items
 
     # Botones
     pygame.draw.rect(screen, BLACK, (SCREEN_WIDTH,
@@ -248,8 +254,26 @@ while run:
                 scroll_speed = 5
             if event.key == pygame.K_d:
                 level += 1
+
+                #añadir mapa nuevo si no existe
+                if level > len(maps) - 1:
+                    new_map = []
+                    for row in range(ROWS):
+                        r = [0] * MAX_COLS
+                        new_map.append(r)
+                    maps.append(new_map)
+                world_data = maps[level]
+                
+                #añadir items nuevos si no existen
+                if level > len(items) - 1:
+                    new_items = []
+                    items.append(new_items)
+                floating_items = items[level]
+                    
             if event.key == pygame.K_a and level > 0:
                 level -= 1
+                world_data = maps[level]
+                floating_items = items[level]
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_UP:
                 scroll_up = False
