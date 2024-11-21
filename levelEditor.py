@@ -250,7 +250,7 @@ while run:
                 scroll_left = True
             if event.key == pygame.K_RIGHT:
                 scroll_right = True
-            if event.key == pygame.K_RSHIFT:
+            if event.key == pygame.K_RSHIFT or event.key == pygame.K_LSHIFT:
                 scroll_speed = 5
             if event.key == pygame.K_d:
                 level += 1
@@ -283,7 +283,7 @@ while run:
                 scroll_left = False
             if event.key == pygame.K_RIGHT:
                 scroll_right = False
-            if event.key == pygame.K_RSHIFT:
+            if event.key == pygame.K_RSHIFT or event.key == pygame.K_LSHIFT:
                 scroll_speed = 1
         if event.type == pygame.MOUSEBUTTONUP:
             mouse_clicked = False
