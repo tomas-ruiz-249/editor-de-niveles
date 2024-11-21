@@ -150,7 +150,7 @@ while run:
                     TILE_SIZE / 2, item_y - scroll_y - TILE_SIZE / 2))
     # Guardar y cargar datos
     if save_button.draw(screen):
-        with open(f'paredes{level}.csv', 'w', newline='') as csvfile:
+        with open(f'map{level}.txt', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
             for row in world_data:
                 transformed_row = [1 if tile == 4 else 2 if tile ==
@@ -167,7 +167,7 @@ while run:
                 writer.writerow([item_type, item_x, item_y])
 
     if load_button.draw(screen):
-        with open(f'paredes{level}.csv', newline='') as csvfile:
+        with open(f'map{level}.txt', newline='') as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
             world_data = []
             for row in reader:
