@@ -154,14 +154,14 @@ while run:
                     TILE_SIZE / 2, item_y - scroll_y - TILE_SIZE / 2))
     # Guardar y cargar datos
     if save_button.draw(screen):
-        with open(f'map{level}.txt', 'w', newline='') as csvfile:
+        with open(f'output/map{level}.txt', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
             for row in maps[level]:
                 transformed_row = [1 if tile == 4 else 2 if tile ==
                                    5 else 3 if tile == 6 else 4 if tile == 7 else tile for tile in row]
                 writer.writerow(transformed_row)
 
-        with open(f'items{level}.csv', 'w', newline='') as csvfile:
+        with open(f'output/items{level}.csv', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
             for item in items[level]:
                 item_type = item[0]
@@ -171,14 +171,14 @@ while run:
                 writer.writerow([item_type, item_x, item_y])
 
     if load_button.draw(screen):
-        with open(f'map{level}.txt', newline='') as csvfile:
+        with open(f'output/map{level}.txt', newline='') as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
             world_data = []
             for row in reader:
                 transformed_row = [4 if tile == '1' else 5 if tile == '2' else 6 if tile == '3' else 7 if tile == '4' else 0 for tile in row]
                 world_data.append([int(tile) for tile in transformed_row])
             maps[level] = world_data
-        with open(f'items{level}.csv', newline='') as csvfile:
+        with open(f'output/items{level}.csv', newline='') as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
             floating_items.clear()
             for row in reader:
